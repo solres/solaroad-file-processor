@@ -12,7 +12,8 @@ import flir_presenceFileProcessor as flirPresence
 import kratos_mithrasFileProcessor as kratosMithras
 import legrandFileProcessor as legrand
 
-PATH = r'\\app-solaroad01\data\Setup\Data'
+#PATH = r'\\app-solaroad01\data\Setup\Data'
+PATH = 'C:\Data\Setup\Data'
 DB_PATH = 'db'
 DB_FILE = 'processedFiles.data'
 LOG_PATH = 'log'
@@ -20,7 +21,7 @@ CONFIG_FILE = 'config.ini'
 
 formatter = logging.Formatter('%(asctime)s: %(levelname)-8s - [%(name)s] %(message)s')
 logger = logging.getLogger('solaroad')
-uploadTime = multiprocessing.Value('uploadTime', 2)  # 2 AM everyday
+uploadTime = multiprocessing.Value('i', 2)  # 2 AM everyday
 scheduler = BlockingScheduler()
 
 def doProcessing():
