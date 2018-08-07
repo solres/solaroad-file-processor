@@ -4,6 +4,13 @@ import logging
 import multiprocessing
 from datetime import datetime as dt
 from apscheduler.schedulers.background import BlockingScheduler
+import agilentFileProcessor as agilent
+import apsFileProcessor as aps
+import autarcoFileProcessor as autarco
+import flir_bicycleFileProcessor as flirBicycle
+import flir_presenceFileProcessor as flirPresence
+import kratos_mithrasFileProcessor as kratosMithras
+import legrandFileProcessor as legrand
 
 PATH = r'\\app-solaroad01\data\Setup\Data'
 DB_PATH = 'db'
@@ -41,12 +48,37 @@ def doProcessing():
             line = os.path.join(dirPath, fileName)
             currentFiles.append(line)
 
-    for file in [f for f in currentFiles if f not in processedFiles]:
-        logger.debug("%s needs to be processed!", file)
-        # process(file)
+    filesToBeProcessed = [f for f in currentFiles if f not in processedFiles]
+    logger.debug('Going to process %d files : %s', len(filesToBeProcessed), filesToBeProcessed)
+
+    for file in filesToBeProcessed:
+        try:
+            if 'Agilent' in file:
+                agilent.processAgilentFile(file)
+            elif 'Aps' in file:
+                aps.processAPSFile(file)
+            elif 'Autarco' in file:
+                autarco.processAutarcoFile(file)
+            elif 'FlirBicycle' in file:
+                flirBicycle.processFlirBicycleFile(file)
+            elif 'FlirOther' in file:
+                flirPresence.processFlirPresenceFile(file)
+            elif 'kratos' in file:
+                kratosMithras.processKratosFile(file)
+            elif 'mithras' in file:
+                kratosMithras.processMithrasFile(file)
+            elif 'LeGrand' in file:
+                legrand.processLeGrandFile(file)
+            else:
+                logger.error('Unknown sensor datatype: %s', file)
+        except:
+            logger.error('An error occurred trying to process %s', file)
+
         with open(dbFile, 'w') as fileHandle:
-            fileHandle.write(file + "\n")
+            fileHandle.write(file + '\n')
             fileHandle.close()
+
+    logger.debug('Done processing files!')
 
     if 'upload_time' in config['SensorCloud']:
         try:
