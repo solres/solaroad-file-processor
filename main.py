@@ -42,7 +42,7 @@ def doProcessing():
 
     with open(dbFile, 'r') as fileHandle:
         for processedFile in fileHandle.readlines():
-            processedFiles.append(processedFile)
+            processedFiles.append(processedFile[:-1])
         fileHandle.close()
 
     for dirPath, dirnames, fileNames in os.walk(PATH):
