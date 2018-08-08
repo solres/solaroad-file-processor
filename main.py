@@ -75,7 +75,7 @@ def doProcessing():
         except:
             logger.error('An error occurred trying to process %s', file)
 
-        with open(dbFile, 'w') as fileHandle:
+        with open(dbFile, 'a') as fileHandle:
             fileHandle.write(file + '\n')
             fileHandle.close()
 
@@ -87,7 +87,7 @@ def doProcessing():
             if 0 <= rescheduledTime <= 23 and rescheduledTime != uploadTime.value:
                 logging.debug('Rescheduling processingJob to %s:00 hours from %s:00 hours everyday!', rescheduledTime,
                               uploadTime.value)
-                scheduler.reschedule_job('processing_job', 'cron', hour=rescheduledTime)
+                scheduler.reschedule_job('processing_job', 'cron', hour=str(rescheduledTime))
                 uploadTime.value = rescheduledTime
         except ValueError:
             logger.error('%s is not a valid upload time. Expecting value in the range (0-23).',
@@ -97,5 +97,6 @@ def doProcessing():
     logger.removeHandler(fh)
     fh.close()
 
+doProcessing()
 scheduler.add_job(doProcessing, 'cron', hour=str(uploadTime.value), id='processing_job')
 scheduler.start()
