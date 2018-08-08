@@ -21,6 +21,7 @@ CONFIG_FILE = 'config.ini'
 
 formatter = logging.Formatter('%(asctime)s: %(levelname)-8s - [%(name)s] %(message)s')
 logger = logging.getLogger('solaroad')
+logger.setLevel(logging.DEBUG)
 uploadTime = multiprocessing.Value('i', 2)  # 2 AM everyday
 scheduler = BlockingScheduler()
 

@@ -22,7 +22,7 @@ SECONDS = 0
 
 config = configparser.ConfigParser()
 config.read('config.ini')
-logger = logging.getLogger('sensorcloud.internal')
+logger = logging.getLogger('solaroad.internal')
 
 def getDeviceId():
     return config['SensorCloud']['device_id']
