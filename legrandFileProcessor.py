@@ -2,32 +2,43 @@ import logging
 import xdrlib
 import pandas as pd
 import sensorcloud as sc
+import re
 
-SENSOR_NAME = 'LeGrand'
 CHANNEL_NAME = 'kWh'
 
 def processLeGrandFile(file):
     logger = logging.getLogger('solaroad.legrand')
 
+    try:
+        sensorName = re.match('.*\\\\(\d+_\d+).*', file)[1]
+    except:
+        raise ValueError('Bad file name ' + file + '. Cannot read sensor name from it')
+
     x = pd.read_csv(file, delimiter=';', skip_blank_lines=True)
-    x.columns = ['Date', 'kWh']
-    index_time = pd.to_datetime(x['Date'], format='%m/%d/%Y %I:%M:%S %p')
+
+    if isinstance(x.index, pd.RangeIndex):
+        x.columns = ['Date', 'kWh']
+        index_time = pd.to_datetime(x['Date'], format='%m/%d/%Y %I:%M:%S %p')
+        del(x['Date'])
+    else:
+        x.columns = ['kWh', 'kVarh']
+        index_time = pd.to_datetime(x.index, format='%m/%d/%Y %I:%M:%S %p')
+        x['kVarh'] = pd.to_numeric(x['kVarh'])
 
     x.index = index_time
+    x['kWh'] = pd.to_numeric(x['kWh'])
     for key in x.keys():
         if 'Unnamed' in key:
             del (x[key])
     x = x.dropna()
-    del (x['Date'])
-    x['kWh'] = pd.to_numeric(x['kWh'])
 
     # Authenticate
-    server, auth_token = sc.authenticate()
-    deviceId = sc.getDeviceId()
+    # server, auth_token = sc.authenticate()
+    # deviceId = sc.getDeviceId()
 
     # Add Sensor
-    logger.debug('======================== Now processing Legrand ========================')
-    sc.addSensor(server, auth_token, deviceId, SENSOR_NAME, SENSOR_NAME, SENSOR_NAME, SENSOR_NAME)
+    logger.debug('======================== Now processing LeGrand %s ========================', sensorName)
+    # sc.addSensor(server, auth_token, deviceId, sensorName, sensorName, sensorName, sensorName)
 
     # Pre-processing
     y = x.resample('12H').mean().interpolate(method='linear')
@@ -51,8 +62,8 @@ def processLeGrandFile(file):
 
             logger.debug('Now uploading %s', key)
 
-            if ctr == 0:
-                sc.addChannel(server, auth_token, deviceId, SENSOR_NAME, CHANNEL_NAME, CHANNEL_NAME, CHANNEL_NAME)
+            # if ctr == 0:
+            #     sc.addChannel(server, auth_token, deviceId, sensorName, CHANNEL_NAME, CHANNEL_NAME, CHANNEL_NAME)
 
             for item in tmp[key].iteritems():
                 val = item[1]
@@ -61,5 +72,5 @@ def processLeGrandFile(file):
                 packer.pack_float(float(val))
 
             data = packer.get_buffer()
-            sc.uploadData(server, auth_token, deviceId, SENSOR_NAME, CHANNEL_NAME, data)
+            # sc.uploadData(server, auth_token, deviceId, sensorName, CHANNEL_NAME, data)
         ctr = ctr + 1
