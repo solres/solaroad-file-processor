@@ -25,8 +25,9 @@ def processFlirBicycleFile(file):
         sc.addSensor(server, auth_token, deviceId, str(zone), 'Flir-Bicycle', str(zone), str(zone))
 
         # Pre-processing
-        y = x.resample('3600S').mean().interpolate(method='linear')
+        y = x.loc[x['Zone'] == zone]
         del (y['Zone'])
+        y = y.resample('3600S').mean().interpolate(method='linear')
 
         # Break DataFrame into chunks of 100k
         ctr = 0

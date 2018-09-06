@@ -28,8 +28,9 @@ def processFlirPresenceFile(file):
         sc.addSensor(server, auth_token, deviceId, lane, 'Flir-Presence', lane, lane)
 
         # Pre-processing
-        y = x.resample('3600S').mean().interpolate(method='linear')
+        y = x.loc[x['Lane'] == l]
         del (y['Lane'])
+        y = y.resample('3600S').mean().interpolate(method='linear')
 
         # Break DataFrame into chunks of 100k
         ctr = 0
