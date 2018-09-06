@@ -8,8 +8,6 @@ import logging
 def processAPSFile(file):
     logger = logging.getLogger('solaroad.aps')
 
-    sensorId = file.split('_')[1]
-
     x = pd.read_csv(file, delimiter=';', skip_blank_lines=True)
     index_time = pd.to_datetime(x['Date'], format="%Y-%m-%d %H:%M:%S")
     x.index = index_time
@@ -19,7 +17,6 @@ def processAPSFile(file):
     x = x.dropna()
 
     for inverterId in x['Inverter ID'].unique():
-        inverterId = sensorId + '-' + inverterId
         logger.debug('======================== Now processing %s ========================', inverterId)
         y = x.loc[x['Inverter ID'] == inverterId]
         del (y['Inverter ID'])
