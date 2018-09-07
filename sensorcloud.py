@@ -130,7 +130,17 @@ def addSensor(server, auth_token, device_id, sensor_name, sensor_type='', sensor
     if response.status is 201:
         logger.debug('Sensor added')
     else:
-        logger.warning('Error adding sensor. Error %d: %s', response.status, response.read())
+        responseMessage = str(response.read())
+        logger.error('Error adding sensor. Error %d: %s', response.status, responseMessage)
+        if 'Invalid Token' in responseMessage:
+            global UPLOAD_ERROR_COUNT
+            if UPLOAD_ERROR_COUNT == 0:
+                logger.debug('Attempting to authenticate once more and re-add sensor!')
+                server, new_token = authenticate()
+                addSensor(server, new_token, device_id, sensor_name, sensor_type, sensor_label, sensor_desc)
+            else:
+                logger.error('Nope! That did not work. This data will be lost!')
+                UPLOAD_ERROR_COUNT = 0
 
 
 def updateSensor(server, auth_token, device_id, sensor_name, sensor_type='', sensor_label='', sensor_desc=''):
@@ -194,7 +204,17 @@ def addChannel(server, auth_token, device_id, sensor_name, channel_name, channel
     if response.status is 201:
         logger.debug('Channel successfuly added')
     else:
-        logger.warning('Error adding channel. Error %d: %s', response.status, response.read())
+        responseMessage = str(response.read())
+        logger.error('Error adding channel. Error %d: %s', response.status, responseMessage)
+        if 'Invalid Token' in responseMessage:
+            global UPLOAD_ERROR_COUNT
+            if UPLOAD_ERROR_COUNT == 0:
+                logger.debug('Attempting to authenticate once more and re-add channel!')
+                server, new_token = authenticate()
+                addChannel(server, new_token, device_id, sensor_name, channel_name, channel_label, channel_desc)
+            else:
+                logger.error('Nope! That did not work. This data will be lost!')
+                UPLOAD_ERROR_COUNT = 0
 
 def uploadData(server, auth_token, device_id, sensor_name, channel_name, data):
     '''
@@ -221,7 +241,7 @@ def uploadData(server, auth_token, device_id, sensor_name, channel_name, data):
         if 'Invalid Token' in responseMessage:
             global UPLOAD_ERROR_COUNT
             if UPLOAD_ERROR_COUNT == 0:
-                logger.error('Attempting to authenticate once more and re-upload data!')
+                logger.debug('Attempting to authenticate once more and re-upload data!')
                 server, new_token = authenticate()
                 uploadData(server, new_token, device_id, sensor_name, channel_name, data)
             else:
