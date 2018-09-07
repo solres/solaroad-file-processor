@@ -14,6 +14,7 @@ AUTH_SERVER = 'sensorcloud.microstrain.com'
 USERNAME = 'username'
 PASSWORD = 'password'
 MAX_POINTS = 100000
+UPLOAD_ERROR_COUNT = 0
 
 # samplerate types
 HERTZ = 1
@@ -129,7 +130,7 @@ def addSensor(server, auth_token, device_id, sensor_name, sensor_type='', sensor
     if response.status is 201:
         logger.debug('Sensor added')
     else:
-        logger.warning('Error adding sensor. Error: %s', response.read())
+        logger.warning('Error adding sensor. Error %d: %s', response.status, response.read())
 
 
 def updateSensor(server, auth_token, device_id, sensor_name, sensor_type='', sensor_label='', sensor_desc=''):
@@ -161,7 +162,7 @@ def updateSensor(server, auth_token, device_id, sensor_name, sensor_type='', sen
     if response.status is 201:
         logger.debug('Sensor updated')
     else:
-        logger.warning('Error updating sensor. Error: %s', response.read())
+        logger.warning('Error updating sensor. Error %d: %s', response.status, response.read())
 
 
 def addChannel(server, auth_token, device_id, sensor_name, channel_name, channel_label='', channel_desc=''):
@@ -193,8 +194,7 @@ def addChannel(server, auth_token, device_id, sensor_name, channel_name, channel
     if response.status is 201:
         logger.debug('Channel successfuly added')
     else:
-        logger.warning('Error adding channel.  Error: %s', response.read())
-
+        logger.warning('Error adding channel. Error %d: %s', response.status, response.read())
 
 def uploadData(server, auth_token, device_id, sensor_name, channel_name, data):
     '''
@@ -216,7 +216,17 @@ def uploadData(server, auth_token, device_id, sensor_name, channel_name, data):
     if response.status is 201:
         logger.debug('data successfully added')
     else:
-        logger.error('Error adding data.  Error: %s', response.read())
+        responseMessage = str(response.read())
+        logger.error('Error adding data. Error %d: %s', response.status, responseMessage)
+        if 'Invalid Token' in responseMessage:
+            global UPLOAD_ERROR_COUNT
+            if UPLOAD_ERROR_COUNT == 0:
+                logger.error('Attempting to authenticate once more and re-upload data!')
+                server, new_token = authenticate()
+                uploadData(server, new_token, device_id, sensor_name, channel_name, data)
+            else:
+                logger.error('Nope! That did not work. This data will be lost!')
+                UPLOAD_ERROR_COUNT = 0
 
 
 def downloadData(server, auth_token, device_id, sensor_name, channel_name, startTime, endTime):
