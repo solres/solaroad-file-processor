@@ -33,12 +33,12 @@ def processLeGrandFile(file):
     x = x.dropna()
 
     # Authenticate
-    # server, auth_token = sc.authenticate()
-    # deviceId = sc.getDeviceId()
+    server, auth_token = sc.authenticate()
+    deviceId = sc.getDeviceId()
 
     # Add Sensor
     logger.debug('======================== Now processing LeGrand %s ========================', sensorName)
-    # sc.addSensor(server, auth_token, deviceId, sensorName, sensorName, sensorName, sensorName)
+    sc.addSensor(server, auth_token, deviceId, sensorName, sensorName, sensorName, sensorName)
 
     # Pre-processing
     y = x.resample('12H').mean().interpolate(method='linear')
@@ -62,8 +62,8 @@ def processLeGrandFile(file):
 
             logger.debug('Now uploading %s', key)
 
-            # if ctr == 0:
-            #     sc.addChannel(server, auth_token, deviceId, sensorName, CHANNEL_NAME, CHANNEL_NAME, CHANNEL_NAME)
+            if ctr == 0:
+                sc.addChannel(server, auth_token, deviceId, sensorName, CHANNEL_NAME, CHANNEL_NAME, CHANNEL_NAME)
 
             for item in tmp[key].iteritems():
                 val = item[1]
@@ -72,5 +72,5 @@ def processLeGrandFile(file):
                 packer.pack_float(float(val))
 
             data = packer.get_buffer()
-            # sc.uploadData(server, auth_token, deviceId, sensorName, CHANNEL_NAME, data)
+            sc.uploadData(server, auth_token, deviceId, sensorName, CHANNEL_NAME, data)
         ctr = ctr + 1
