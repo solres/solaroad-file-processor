@@ -2,6 +2,8 @@ import configparser
 import os
 import logging
 import multiprocessing
+import math
+from apscheduler import events
 from datetime import datetime as dt
 from apscheduler.schedulers.background import BlockingScheduler
 import agilentFileProcessor as agilent
@@ -32,7 +34,11 @@ def doProcessing():
     currentFiles = []
     processedFiles = []
 
-    logfile = os.path.join(LOG_PATH, dt.now().strftime('log_%d_%m_%Y.log'))
+    if 'fh' in locals():
+        logger.removeHandler(fh)
+        fh.close()
+    
+    logfile = os.path.join(LOG_PATH, dt.now().strftime('log_%d_%m_%Y_%H_%M_%S.log'))
     fh = logging.FileHandler(logfile)
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
@@ -95,9 +101,14 @@ def doProcessing():
                           config['SensorCloud']['upload_time'])
 
     logger.debug('End of processing for the day!')
-    logger.removeHandler(fh)
-    fh.close()
+    #logger.removeHandler(fh)
+    #fh.close()
+
+def my_listener(event):
+    index = int(math.log(event.code, 2))
+    logger.debug('%s happened!', events.__all__[index])
 
 doProcessing()
-scheduler.add_job(doProcessing, 'cron', hour=str(uploadTime.value), id='processing_job')
+scheduler.add_listener(my_listener)
+scheduler.add_job(doProcessing, 'cron', hour=str(uploadTime.value), minute=0, second=0, id='processing_job', misfire_grace_time=900, coalesce=True)
 scheduler.start()
