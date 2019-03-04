@@ -99,5 +99,5 @@ def doProcessing():
     fh.close()
 
 doProcessing()
-scheduler.add_job(doProcessing, 'cron', hour=str(uploadTime.value), id='processing_job')
+scheduler.add_job(doProcessing, 'cron', hour=str(uploadTime.value), id='processing_job', misfire_grace_time=900, coalesce=True)
 scheduler.start()
