@@ -8,5 +8,5 @@ setup(
     license='',
     author='subramaniana',
     author_email='arun.subramanian@tno.nl',
-    description='SensorCloud APIs for SolaRoad'
+    description='SensorCloud APIs for SolaRoad', install_requires=['numpy', 'pandas', 'apscheduler']
 )

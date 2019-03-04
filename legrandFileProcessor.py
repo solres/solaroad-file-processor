@@ -2,17 +2,16 @@ import logging
 import xdrlib
 import pandas as pd
 import sensorcloud as sc
-import re
 
 CHANNEL_NAME = 'kWh'
 
 def processLeGrandFile(file):
+    if 'Devices' not in file:
+        return
+
     logger = logging.getLogger('solaroad.legrand')
 
-    try:
-        sensorName = re.match('.*\\\\(\d+_\d+).*', file)[1]
-    except:
-        raise ValueError('Bad file name ' + file + '. Cannot read sensor name from it')
+    sensorName = 'LeGrand'
 
     x = pd.read_csv(file, delimiter=';', skip_blank_lines=True)
 
