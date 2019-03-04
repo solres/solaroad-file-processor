@@ -2,20 +2,22 @@ import configparser
 import os
 import logging
 import multiprocessing
-import math
-from apscheduler import events
 from datetime import datetime as dt
 from apscheduler.schedulers.background import BlockingScheduler
+from itertools import chain
 import agilentFileProcessor as agilent
 import apsFileProcessor as aps
-import autarcoFileProcessor as autarco
+import gillFileProcessor as gill
 import flir_bicycleFileProcessor as flirBicycle
-import flir_presenceFileProcessor as flirPresence
-import kratos_mithrasFileProcessor as kratosMithras
 import legrandFileProcessor as legrand
 
-#PATH = r'\\app-solaroad01\data\Setup\Data'
-PATH = 'C:\Data\Setup\Data'
+PATHS = [
+    'C:\\Users\\Public\\Documents\\Measure Software\\CSV\\Energies',
+    'C:\\Users\\ra-solaroadzwaarver\\Documents\\APS',
+    'C:\\Users\\ra-solaroadzwaarver\\Documents\\Flir',
+    'C:\\Users\\ra-solaroadzwaarver\\Documents\\Gill_logdata',
+    'C:\\Users\\ra-solaroadzwaarver\\Documents\\TNO_Agilent'
+]
 DB_PATH = 'db'
 DB_FILE = 'processedFiles.data'
 LOG_PATH = 'log'
@@ -27,6 +29,7 @@ logger.setLevel(logging.DEBUG)
 uploadTime = multiprocessing.Value('i', 2)  # 2 AM everyday
 scheduler = BlockingScheduler()
 
+
 def doProcessing():
     config = configparser.ConfigParser()
     config.read(CONFIG_FILE)
@@ -37,7 +40,7 @@ def doProcessing():
     if 'fh' in locals():
         logger.removeHandler(fh)
         fh.close()
-    
+
     logfile = os.path.join(LOG_PATH, dt.now().strftime('log_%d_%m_%Y_%H_%M_%S.log'))
     fh = logging.FileHandler(logfile)
     fh.setLevel(logging.DEBUG)
@@ -51,7 +54,7 @@ def doProcessing():
             processedFiles.append(processedFile[:-1])
         fileHandle.close()
 
-    for dirPath, dirnames, fileNames in os.walk(PATH):
+    for dirPath, dirs, fileNames in chain.from_iterable(os.walk(path) for path in PATHS):
         for fileName in fileNames:
             line = os.path.join(dirPath, fileName)
             currentFiles.append(line)
@@ -65,17 +68,11 @@ def doProcessing():
                 agilent.processAgilentFile(file)
             elif 'Aps' in file:
                 aps.processAPSFile(file)
-            elif 'Autarco' in file:
-                autarco.processAutarcoFile(file)
-            elif 'FlirBicycle' in file:
+            elif 'Gill' in file:
+                gill.processGillFile(file)
+            elif 'Flir' in file:
                 flirBicycle.processFlirBicycleFile(file)
-            elif 'FlirOther' in file:
-                flirPresence.processFlirPresenceFile(file)
-            elif 'kratos' in file:
-                kratosMithras.processKratosFile(file)
-            elif 'mithras' in file:
-                kratosMithras.processMithrasFile(file)
-            elif 'LeGrand' in file:
+            elif 'Energies' in file:
                 legrand.processLeGrandFile(file)
             else:
                 logger.error('Unknown sensor datatype: %s', file)
@@ -98,15 +95,10 @@ def doProcessing():
                 uploadTime.value = rescheduledTime
         except ValueError:
             logger.error('%s is not a valid upload time. Expecting value in the range (0-23).',
-                          config['SensorCloud']['upload_time'])
+                         config['SensorCloud']['upload_time'])
 
     logger.debug('End of processing for the day!')
-    #logger.removeHandler(fh)
-    #fh.close()
 
-def my_listener(event):
-    index = int(math.log(event.code, 2))
-    logger.debug('%s happened!', events.__all__[index])
 
 doProcessing()
 
