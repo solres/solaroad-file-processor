@@ -18,7 +18,7 @@ logger = logging.getLogger('apsDataLogger')
 logger.setLevel(logging.DEBUG)
 
 
-def processPath(df, path):
+def processPath(path):
     with urllib.request.urlopen(path) as response:
         logger.debug('ResponseCode = ' + str(response.getcode()))
         if response.getcode() != 200:
@@ -29,6 +29,8 @@ def processPath(df, path):
 
     logger.debug('Going to load json')
     y = json.loads(f)
+
+    df = {}
 
     for data in y['data']:
         for zone in data['zone']:
