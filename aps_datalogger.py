@@ -29,7 +29,7 @@ PAGE_PATH = r"http://192.168.1.200/index.php/realtimedata"
 APS_LOG_PATH = "C:\\Users\\ra-solaroadzwaarver\\Documents\\APS"
 
 formatter = logging.Formatter('%(asctime)s: %(levelname)-8s - [%(name)s] %(message)s')
-logger = logging.getLogger('flirDataLogger')
+logger = logging.getLogger('apsDataLogger')
 logger.setLevel(logging.DEBUG)
 
 
@@ -104,6 +104,7 @@ def doProcessing():
             row['Grid Frequency'] = df.loc[df['Inverter ID'] == invAid]['Grid Frequency'].values[0]
             row['Temperature'] = df.loc[df['Inverter ID'] == invAid]['Temperature'].values[0]
 
+    logger.debug(df)
     try:
         df
     except NameError:
