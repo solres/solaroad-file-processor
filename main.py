@@ -10,6 +10,9 @@ import apsFileProcessor as aps
 import gillFileProcessor as gill
 import flir_bicycleFileProcessor as flirBicycle
 import legrandFileProcessor as legrand
+import aps_datalogger as apsDL
+import flir_datalogger as flirDL
+
 
 PATHS = [
     'C:\\Users\\Public\\Documents\\Measure Software\\CSV\\Energies',
@@ -28,6 +31,10 @@ logger = logging.getLogger('solaroad')
 logger.setLevel(logging.DEBUG)
 uploadTime = multiprocessing.Value('i', 2)  # 2 AM everyday
 scheduler = BlockingScheduler()
+
+# Start the Flir and APS data loggers
+apsDL.start()
+flirDL.start()
 
 
 def doProcessing():
@@ -100,7 +107,7 @@ def doProcessing():
     logger.debug('End of processing for the day!')
 
 
-doProcessing()
+# doProcessing()
 
 scheduler.add_job(doProcessing, 'cron', hour=str(uploadTime.value), id='processing_job', misfire_grace_time=900, coalesce=True)
 scheduler.start()

@@ -10,14 +10,11 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 URL = 'http://192.168.1.110'
 DEFAULT_PATH = '/api/data?begintime=1970-01-01T00%3A00%3A00.000%2B00%3A00'
-# URL = 'https://raw.githubusercontent.com/solres/sol-resources/master/test.json'
-# DEFAULT_PATH = ''
-FLIR_LOG_PATH = 'C:\\Users\\ra-solaroadzwaarver\\Downloads\\Arun\\Flir\\'
-# FLIR_LOG_PATH = ' '
+FLIR_LOG_PATH = 'C:\\Users\\ra-solaroadzwaarver\\Documents\\Flir\\'
 DB_PATH = 'db'
 DB_FILE = 'processedPaths.data'
 formatter = logging.Formatter('%(asctime)s: %(levelname)-8s - [%(name)s] %(message)s')
-logger = logging.getLogger('flirDataLogger')
+logger = logging.getLogger('apsDataLogger')
 logger.setLevel(logging.DEBUG)
 
 
@@ -83,7 +80,12 @@ def publishToCSV(df, date):
 
 
 def doProcessing():
-    logfile = os.path.join('log', dt.now().strftime('log_%d_%m_%Y.log'))
+
+    if 'fh' in locals():
+        logger.removeHandler(fh)
+        fh.close()
+
+    logfile = os.path.join('log', dt.now().strftime('flir_data_logger_log_%d_%m_%Y.log'))
     fh = logging.FileHandler(logfile)
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
@@ -118,10 +120,9 @@ def doProcessing():
                 fileHandle.write(lastProcessedPath)
                 fileHandle.close()
 
-    fh.close()
 
-
-doProcessing()
-scheduler = BlockingScheduler()
-scheduler.add_job(doProcessing, 'interval', hours=1)
-scheduler.start()
+def start():
+    doProcessing()
+    scheduler = BlockingScheduler()
+    scheduler.add_job(doProcessing, 'interval', hours=1)
+    scheduler.start()
