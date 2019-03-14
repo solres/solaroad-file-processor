@@ -11,13 +11,17 @@ SENSOR_NAME = 'Agilent'
 def processAgilentFile(file):
     logger = logging.getLogger('solaroad.agilent')
     numSkipRows = 0
+    num_lines = sum(1 for line in open(file, encoding="utf-16")) - 1
     with open(file, encoding="utf-16") as csvFile:
         line = csvFile.readline()
         while line[:5] != "Scan,":
+            if numSkipRows >= num_lines:
+                logger.debug('There was no data to read from %s! Skipping!', file)
+                return
             numSkipRows += 1
             line = csvFile.readline()
     x = pd.read_csv(file, delimiter=',', skip_blank_lines=True, skiprows=numSkipRows, encoding="utf-16")
-    index_time = pd.to_datetime(x['Time'], format="%m/%d/%Y %H:%M:%S:%f")
+    index_time = pd.to_datetime(x['Time'], format="%d-%m-%Y %H:%M:%S:%f")
     x.index = index_time
     for key in x.keys():
         if 'Unnamed' in key:

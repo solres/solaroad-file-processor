@@ -6,12 +6,10 @@ from datetime import datetime as dt
 from apscheduler.schedulers.background import BlockingScheduler
 from itertools import chain
 import agilentFileProcessor as agilent
-import apsFileProcessor as aps
+import apsMECFileProcessor as aps
 import gillFileProcessor as gill
 import flir_bicycleFileProcessor as flirBicycle
 import legrandFileProcessor as legrand
-import aps_datalogger as apsDL
-import flir_datalogger as flirDL
 
 
 PATHS = [
@@ -31,10 +29,6 @@ logger = logging.getLogger('solaroad')
 logger.setLevel(logging.DEBUG)
 uploadTime = multiprocessing.Value('i', 2)  # 2 AM everyday
 scheduler = BlockingScheduler()
-
-# Start the Flir and APS data loggers
-apsDL.start()
-flirDL.start()
 
 
 def doProcessing():
@@ -73,7 +67,7 @@ def doProcessing():
         try:
             if 'Agilent' in file:
                 agilent.processAgilentFile(file)
-            elif 'Aps' in file:
+            elif 'APS' in file:
                 aps.processAPSFile(file)
             elif 'Gill' in file:
                 gill.processGillFile(file)
@@ -83,8 +77,8 @@ def doProcessing():
                 legrand.processLeGrandFile(file)
             else:
                 logger.error('Unknown sensor datatype: %s', file)
-        except:
-            logger.error('An error occurred trying to process %s', file)
+        except Exception as ex:
+            logger.error('An error occurred trying to process %s: (%s)', file, ex)
 
         with open(dbFile, 'a') as fileHandle:
             fileHandle.write(file + '\n')
@@ -107,7 +101,7 @@ def doProcessing():
     logger.debug('End of processing for the day!')
 
 
-# doProcessing()
+doProcessing()
 
 scheduler.add_job(doProcessing, 'cron', hour=str(uploadTime.value), id='processing_job', misfire_grace_time=900, coalesce=True)
 scheduler.start()

@@ -45,6 +45,7 @@ def processPath(path):
     for d in df.values():
         d.index = pd.to_datetime(d.index, utc=True)
         d.index.name = 'Timestamp'
+        d = d.sort_index()
 
     if 'nextDataUrl' in y:
         logger.debug('Next step' + y['nextDataUrl'])
@@ -104,7 +105,7 @@ def doProcessing():
     if lastProcessedPath is not '':
         next_path = getNextPath(URL + lastProcessedPath)
     else:
-        next_path = URL + DEFAULT_PATH
+        next_path = DEFAULT_PATH
 
     if next_path is '':
         logger.debug('No more paths to process! Skipping this round!')
@@ -123,8 +124,7 @@ def doProcessing():
                 fileHandle.close()
 
 
-def start():
-    doProcessing()
-    scheduler = BlockingScheduler()
-    scheduler.add_job(doProcessing, 'interval', hours=1)
-    scheduler.start()
+doProcessing()
+scheduler = BlockingScheduler()
+scheduler.add_job(doProcessing, 'interval', hours=1)
+scheduler.start()

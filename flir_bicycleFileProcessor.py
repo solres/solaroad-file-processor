@@ -4,30 +4,33 @@ import numpy as np
 import pandas as pd
 import sensorcloud as sc
 
+
 def processFlirBicycleFile(file):
-    logger = logging.getLogger('solaroad.flirbicycle')
+    logger = logging.getLogger('solaroad.flir')
     x = pd.read_csv(file, delimiter=',', skip_blank_lines=True, skipinitialspace=True)
-    index_time = pd.to_datetime(x['Time'], format="%d/%m/%Y %H:%M:%S")
+    index_time = pd.to_datetime(x['Timestamp'])
     x.index = index_time
     for key in x.keys():
         if 'Unnamed' in key:
             del (x[key])
-    del (x['Time'])
+    del (x['Timestamp'])
     x = x.dropna()
 
-    for zone in x['Zone'].unique():
+    for zone in x['classNr'].unique():
         # Authenticate
         server, auth_token = sc.authenticate()
         deviceId = sc.getDeviceId()
 
+        sensor = 'Flir_Class_'+str(zone)
+
         # Add Sensor
-        logger.debug('======================== Now processing Zone %s ========================', zone)
-        sc.addSensor(server, auth_token, deviceId, str(zone), 'Flir-Bicycle', str(zone), str(zone))
+        logger.debug('======================== Now processing Class %s ========================', zone)
+        sc.addSensor(server, auth_token, deviceId, sensor, sensor, sensor, sensor)
 
         # Pre-processing
-        y = x.loc[x['Zone'] == zone]
-        del (y['Zone'])
-        y = y.resample('3600S').mean().interpolate(method='linear')
+        y = x.loc[x['classNr'] == zone]
+        del (y['classNr'])
+        y = y.resample('60min').sum().interpolate(method='pad')
 
         # Break DataFrame into chunks of 100k
         ctr = 0
@@ -51,7 +54,7 @@ def processFlirBicycleFile(file):
                 logger.debug('Now uploading %s', key)
 
                 if ctr == 0:
-                    sc.addChannel(server, auth_token, deviceId, str(zone), channel, channel, channel)
+                    sc.addChannel(server, auth_token, deviceId, sensor, channel, channel, channel)
 
                 for item in tmp[key].iteritems():
                     val = item[1]
@@ -60,5 +63,5 @@ def processFlirBicycleFile(file):
                     packer.pack_float(float(val))
 
                 data = packer.get_buffer()
-                sc.uploadData(server, auth_token, deviceId, str(zone), channel, data)
+                sc.uploadData(server, auth_token, deviceId, sensor, channel, data)
             ctr = ctr + 1

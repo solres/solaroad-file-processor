@@ -27,6 +27,8 @@ def processGillFile(file):
     server, auth_token = sc.authenticate()
     deviceId = sc.getDeviceId()
 
+    x = x.resample('5min').mean().interpolate(method='linear')
+
     ctr = 0
     total_steps = np.round(len(x) / sc.MAX_POINTS) + 1
     while ctr < total_steps:
@@ -36,20 +38,22 @@ def processGillFile(file):
 
         sc.addSensor(server, auth_token, deviceId, sensorName, sensorName, sensorName, sensorName)
 
-        packer = xdrlib.Packer()
-        packer.pack_int(1)  # version 1
-
-        packer.pack_enum(sc.SECONDS)
-        packer.pack_int(300)
-
-        POINTS = len(tmp)
-        packer.pack_int(POINTS)
-
         logger.debug('Now uploading %s', sensorName)
 
         for key in tmp.keys():
+            packer = xdrlib.Packer()
+            packer.pack_int(1)  # version 1
+
+            packer.pack_enum(sc.SECONDS)
+            packer.pack_int(300)
+
+            POINTS = len(tmp)
+            packer.pack_int(POINTS)
+
             channel = '_'.join(key.replace('(', '').replace(')', '').split(' '))
             sc.addChannel(server, auth_token, deviceId, sensorName, channel, channel, channel)
+
+            logger.debug('Now uploading %s', channel)
 
             for item in tmp[key].iteritems():
                 val = item[1]
