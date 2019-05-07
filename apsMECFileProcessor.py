@@ -22,6 +22,8 @@ def processAPSFile(file):
         y = x.loc[x['Inverter ID'] == inverterId]
         del (y['Inverter ID'])
 
+        y = y.resample('5min').mean().interpolate(method='pad')
+
         server, auth_token = sc.authenticate()
         deviceId = sc.getDeviceId()
 
@@ -34,20 +36,22 @@ def processAPSFile(file):
 
             sc.addSensor(server, auth_token, deviceId, inverterId, inverterId, inverterId, inverterId)
 
-            packer = xdrlib.Packer()
-            packer.pack_int(1)  # version 1
-
-            packer.pack_enum(sc.SECONDS)
-            packer.pack_int(300)
-
-            POINTS = len(tmp)
-            packer.pack_int(POINTS)
-
             logger.debug('Now uploading %s', inverterId)
 
             for key in tmp.keys():
+                packer = xdrlib.Packer()
+                packer.pack_int(1)  # version 1
+
+                packer.pack_enum(sc.SECONDS)
+                packer.pack_int(300)
+
+                POINTS = len(tmp)
+                packer.pack_int(POINTS)
+
                 channel = '_'.join(key.replace('(', '').replace(')', '').split(' '))
                 sc.addChannel(server, auth_token, deviceId, inverterId, channel, channel, channel)
+
+                logger.debug('Now uploading %s', channel)
 
                 for item in tmp[key].iteritems():
                     val = item[1]

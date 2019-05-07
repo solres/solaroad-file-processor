@@ -17,11 +17,11 @@ def processLeGrandFile(file):
 
     if isinstance(x.index, pd.RangeIndex):
         x.columns = ['Date', 'kWh']
-        index_time = pd.to_datetime(x['Date'], format='%m/%d/%Y %I:%M:%S %p')
+        index_time = pd.to_datetime(x['Date'], format='%d-%m-%Y %H:%M:%S')
         del(x['Date'])
     else:
         x.columns = ['kWh', 'kVarh']
-        index_time = pd.to_datetime(x.index, format='%m/%d/%Y %I:%M:%S %p')
+        index_time = pd.to_datetime(x.index, format='%d-%m-%Y %H:%M:%S')
         x['kVarh'] = pd.to_numeric(x['kVarh'])
 
     x.index = index_time
@@ -40,7 +40,7 @@ def processLeGrandFile(file):
     sc.addSensor(server, auth_token, deviceId, sensorName, sensorName, sensorName, sensorName)
 
     # Pre-processing
-    y = x.resample('12H').mean().interpolate(method='linear')
+    y = x.resample('15min').mean().interpolate(method='linear')
 
     # Break DataFrame into chunks of 100k
     ctr = 0
@@ -54,7 +54,7 @@ def processLeGrandFile(file):
             packer.pack_int(1)  # version 1
 
             packer.pack_enum(sc.SECONDS)
-            packer.pack_int(43200)
+            packer.pack_int(900)
 
             POINTS = len(tmp[key])
             packer.pack_int(POINTS)

@@ -26,7 +26,7 @@ ALPHABET_PATTERN = re.compile("[A-Za-ln-z]+")
 INVERTER_ID_PATTERN = re.compile("([0-9]*)-B")
 
 PAGE_PATH = r"http://192.168.1.200/index.php/realtimedata"
-APS_LOG_PATH = "C:\\Users\\ra-solaroadzwaarver\\Documents\\APS"
+APS_LOG_PATH = "C:\\Users\\ra-solaroadzwaarver\\Documents\\APS\\"
 
 formatter = logging.Formatter('%(asctime)s: %(levelname)-8s - [%(name)s] %(message)s')
 logger = logging.getLogger('apsDataLogger')
@@ -114,8 +114,7 @@ def doProcessing():
             publishAPSToCSV(df)
 
 
-def start():
-    doProcessing()
-    scheduler = BlockingScheduler()
-    scheduler.add_job(doProcessing, 'interval', minutes=5)
-    scheduler.start()
+doProcessing()
+scheduler = BlockingScheduler()
+scheduler.add_job(doProcessing, 'interval', minutes=5)
+scheduler.start()
