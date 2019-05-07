@@ -8,9 +8,9 @@ import logging
 from datetime import datetime as dt
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-URL = 'http://192.168.1.110'
+URL = 'http://192.168.0.11'
 DEFAULT_PATH = '/api/data?begintime=1970-01-01T00%3A00%3A00.000%2B00%3A00'
-FLIR_LOG_PATH = 'C:\\Users\\ra-solaroadzwaarver\\Documents\\Flir\\'
+FLIR_LOG_PATH = 'C:\\Users\\karl\\OneDrive\\Documenten\\Flir\\'
 DB_PATH = 'db'
 DB_FILE = 'processedPaths.data'
 formatter = logging.Formatter('%(asctime)s: %(levelname)-8s - [%(name)s] %(message)s')

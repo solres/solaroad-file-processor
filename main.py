@@ -15,11 +15,9 @@ import flir_datalogger as flirDL
 
 
 PATHS = [
-    'C:\\Users\\Public\\Documents\\Measure Software\\CSV\\Energies',
-    'C:\\Users\\ra-solaroadzwaarver\\Documents\\APS',
-    'C:\\Users\\ra-solaroadzwaarver\\Documents\\Flir',
-    'C:\\Users\\ra-solaroadzwaarver\\Documents\\Gill_logdata',
-    'C:\\Users\\ra-solaroadzwaarver\\Documents\\TNO_Agilent'
+    'C:\\Users\\karl\\OneDrive\\Documenten\\Flir',
+    'C:\\Users\\karl\\OneDrive\\Documenten\\Gill\\WindView',
+    'C:\\Users\\karl\\OneDrive\\Documenten\\Agilent'
 ]
 DB_PATH = 'db'
 DB_FILE = 'processedFiles.data'

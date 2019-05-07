@@ -8,9 +8,9 @@ import logging
 def processGillFile(file):
 
     logger = logging.getLogger('solaroad.gill')
-    x = pd.read_csv(file, delimiter=',', skiprows=1, header=None, skip_blank_lines=True)
-    x.columns = ['SlNo', 'Reporting Time', 'Node', 'Pressure', 'Relative Humidity', 'Temperature', 'Dew Point', 'Solar Radiation', 'Measured Time', 'Voltage', 'Status', 'EndChar']
-    x.index = pd.to_datetime(x['Measured Time'], format="%Y-%m-%dT%H:%M:%S.%f")
+    x = pd.read_csv(file, delimiter=',', skiprows=5, header=None, skip_blank_lines=True)
+    x.columns = ['Node', 'Pressure', 'Relative Humidity', 'Temperature', 'Dew Point', 'Solar Radiation', 'Measured Time', 'Voltage', 'Status', 'EndChar', 'SlNo', 'Reporting Time']
+    x.index = pd.to_datetime(x['Reporting Time'], format="%d/%m/%Y %H:%M:%S")
     x.index.name = 'Timestamp'
     del(x['SlNo'])
     del(x['Node'])
@@ -21,7 +21,7 @@ def processGillFile(file):
     del(x['EndChar'])
     x = x.dropna()
 
-    sensorName = 'GillMaximetGMX301'
+    sensorName = 'GILL_UVW_THREE_AXIS'
     logger.debug('======================== Now processing %s ========================', sensorName)
 
     server, auth_token = sc.authenticate()
