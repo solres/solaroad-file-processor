@@ -66,7 +66,7 @@ def processAgilentFile(file):
     typeT = typeTTransform(typeT)
     typeT.columns = [s.replace('VDC', 'degC') for s in colsT]
 
-    excel = x.filter(regex='<30 L\d> (.*)', axis=1)
+    excel = x.filter(regex='30 L\d> (.*)', axis=1)
     colsE = [t for t in excel.keys()]
     excel = excelitasTransform(excel)
     excel.columns = [s.replace('ADC', 'W_per_m2') for s in colsE]
@@ -83,8 +83,7 @@ def processAgilentFile(file):
     sc.addSensor(server, auth_token, deviceId, SENSOR_NAME, SENSOR_NAME, SENSOR_NAME, SENSOR_NAME)
 
     # Pre-processing
-    y = x.resample('120S').mean().interpolate(method='linear')
-    y = y.fillna(0)
+    y = x.resample('120S').mean()
 
     # Break DataFrame into chunks of 100k
     ctr = 0
