@@ -33,7 +33,7 @@ def processAgilentFile(file):
             numSkipRows += 1
             line = csvFile.readline()
     x = pd.read_csv(file, delimiter=',', skip_blank_lines=True, skiprows=numSkipRows, encoding="utf-16")
-    index_time = pd.to_datetime(x['Time'], format="%d-%m-%Y %H:%M:%S:%f")
+    index_time = pd.to_datetime(x['Time'], format="%d/%m/%Y %H:%M:%S:%f")
     x.index = index_time
     for key in x.keys():
         if 'Unnamed' in key:

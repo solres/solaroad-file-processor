@@ -14,7 +14,7 @@ FLIR_LOG_PATH = 'C:\\Users\\karl\\OneDrive\\Documenten\\Flir\\'
 DB_PATH = 'db'
 DB_FILE = 'processedPaths.data'
 formatter = logging.Formatter('%(asctime)s: %(levelname)-8s - [%(name)s] %(message)s')
-logger = logging.getLogger('apsDataLogger')
+logger = logging.getLogger('flirDataLogger')
 logger.setLevel(logging.DEBUG)
 
 
@@ -105,6 +105,7 @@ def doProcessing():
     if lastProcessedPath is not '':
         next_path = getNextPath(URL + lastProcessedPath)
     else:
+        logger.debug('Going with default path!')
         next_path = DEFAULT_PATH
 
     if next_path is '':
@@ -115,7 +116,7 @@ def doProcessing():
             lastProcessedPath = next_path
             df, next_path = processPath(URL + next_path)
             if df:
-                logger.debug('Writing to file!')
+                logger.debug('Writing to file with date ' + date + '!')
                 publishToCSV(df, date)
 
             logger.debug('Processed until %s !!', lastProcessedPath)
