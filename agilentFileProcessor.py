@@ -20,6 +20,10 @@ def typeTTransform(volt):
     return 40.625 * volt - 156.25
 
 
+def excelitasTransform(amp):
+    return amp * (1000 / 0.094)
+
+
 def processAgilentFile(file):
     logger = logging.getLogger('solaroad.agilent')
     numSkipRows = 0
@@ -62,8 +66,14 @@ def processAgilentFile(file):
     typeT = typeTTransform(typeT)
     typeT.columns = [s.replace('VDC', 'degC') for s in colsT]
 
+    excel = x.filter(regex='<30 L\d> (.*)', axis=1)
+    colsE = [t for t in excel.keys()]
+    excel = excelitasTransform(excel)
+    excel.columns = [s.replace('ADC', 'W_per_m2') for s in colsE]
+
     x = x.join(typeK, how='right')
     x = x.join(typeT, how='right')
+    x = x.join(excel, how='right')
 
     server, auth_token = sc.authenticate()
     deviceId = sc.getDeviceId()
